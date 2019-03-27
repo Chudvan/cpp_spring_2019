@@ -30,7 +30,7 @@ public:
 			return Proxy(list[j - 1]);
 		}
 		catch (std::out_of_range) {
-			std::cout << "Âûõîä çà ïğåäåëû ìàòğèöû." << std::endl;
+			std::cout << "Ğ’Ñ‹Ñ…Ğ¾Ğ´ Ğ·Ğ° Ğ¿Ñ€ĞµĞ´ĞµĞ»Ñ‹ Ğ¼Ğ°Ñ‚Ñ€Ğ¸Ñ†Ñ‹." << std::endl;
 			return Proxy(errorInt);
 		}
 	}
@@ -115,7 +115,7 @@ public:
 			return m[i - 1];
 		}
 		catch (std::out_of_range) {
-			std::cout << "Âûõîä çà ïğåäåëû ìàòğèöû." << std::endl;
+			std::cout << "Ğ’Ñ‹Ñ…Ğ¾Ğ´ Ğ·Ğ° Ğ¿Ñ€ĞµĞ´ĞµĞ»Ñ‹ Ğ¼Ğ°Ñ‚Ñ€Ğ¸Ñ†Ñ‹." << std::endl;
 			return errorArray;
 		}
 	}
