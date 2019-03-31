@@ -8,12 +8,12 @@ class Array {
 	int columns;
 public:
 	const int& operator[](int j) const{
-		if (j > columns) throw out_of_range("");
-		return list[i * columns + j - 1];
+		if (j >= columns) throw out_of_range("");
+		return list[i * columns + j];
 	}
 	int& operator[](int j) {
-		if (j > columns) throw out_of_range("");
-		return list[i * columns + j - 1];
+		if (j >= columns) throw out_of_range("");
+		return list[i * columns + j];
 	}
 	Array(int* m, size_t i, size_t columns) : list(m), i(i), columns(columns){
 	}
@@ -78,11 +78,11 @@ public:
 		return (!(*this == B));
 	}
 	const Array operator[](size_t i) const{
-		if (i > rows) throw out_of_range("");
-		return Array(m, i - 1, columns);
+		if (i >= rows) throw out_of_range("");
+		return Array(m, i, columns);
 	}
 	Array operator[](size_t i) {
-		if (i > rows) throw out_of_range("");
-		return Array(m, i - 1, columns);
+		if (i >= rows) throw out_of_range("");
+		return Array(m, i, columns);
 	}
 };
