@@ -1,7 +1,5 @@
 #include <iostream>
-#include <string>
 #include "BigInt.h"
-#include <conio.h>
 using namespace std;
 int main()
 {
@@ -10,7 +8,8 @@ int main()
 	BigInt b = 9223372036854775807;
 	BigInt c = 9223372036854775807;
 	int64_t d = 999999999999999999;
-	cout << a + b + d;
+	cout << a + b + c - d << endl;
+	cout << (a < b) << " " << (a == b) << " " << (b >= d);
 	system("pause>nul");
 	return 0;
 }
