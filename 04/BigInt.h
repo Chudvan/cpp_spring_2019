@@ -1,24 +1,24 @@
 #pragma once
-#define BASELEN 4
-#define BASE 10000
-#define MAXLEN 100
 #include <iostream>
 #include <string>
 #include <cmath>
 using namespace std;
 
+const int baselen = 18;
+const int64_t base = 1000000000000000000;
+const int maxlen = 100;
 
 /*В задаче используется класс BigInt для работы с большими целыми числами.
 
   Идея: хранить число в массиве int *bI, разбив его по 4 разряда в каждой ячейке массива int* bI
   bI[0] = Число ячеек в числе (BigInt) * знак числа (-/+)
   bI[abs(bI[0])] - последняя ячейка числа(BigInt). Число записано в обратном направлении:
-  Например: числу -392736452677368 будет соответствовать bI[101]=[-4][7368][5267][7364][392][0]...[0]
+  Например: При base == 4, числу -392736452677368 будет соответствовать bI[101]=[-4][7368][5267][7364][392][0]...[0]
 
-  Идентификаторы:
-  BASELEN - число десятичных разрядов в одной ячейке массива int* bI
-  BASE - основание системы счисления
-  MAXLEN - максимальная длина числа BigInt в ячейках
+  Константы:
+  baselen - число десятичных разрядов в одной ячейке массива int* bI (!!!baselen <= 18 (разрядность int64_t)!!!)
+  base - основание системы счисления
+  maxlen - максимальная длина числа BigInt в ячейках
 
   Методы класса BigInt:
   int64_t bigIntCMP(int64_t* la, int64_t*  lb) const; - СРАВНЕНИЕ КОЛ-ВА РАЗРЯДОВ у двух длинных чисел
@@ -30,34 +30,39 @@ using namespace std;
   int digitCount(int64_t a) const; - получить КОЛ-ВО РАЗРЯДОВ в числе (в 10-ричной системе)
   int64_t atois(string str); - ПРЕОБРАЗОВАНИЕ (string)(НЕ const char *) -> (int64_t)
 
-  Все операторы(+, -, <, <=, ==, !=, =>, >) в двух вверсиях: для BigInt и для int64_t*/
+  Все операторы(+, -, <, <=, ==, !=, =>, >) в двух вверсиях: для BigInt и для int64_t
+
+  P.S. Максимально большое число типа BigInt (при baselen == 18, base == 1000000000000000000) может состоять
+  из baselen * maxlen == 1800 десятичных разрядов*/
 
 
 class BigInt {
 public:
 	BigInt() {
-		bI = new int64_t[MAXLEN + 1]();
+		bI = new int64_t[maxlen + 1]();
 	}
 	BigInt(int64_t b) {
-		bI = new int64_t[MAXLEN + 1]();
-		char *str = new char[MAXLEN];
+		bI = new int64_t[maxlen + 1]();
+		char *str = new char[maxlen];
 		intToStr(b, str);
 		strTolong(str, bI);
+		delete[] str;
 	}
-	BigInt(const BigInt& value) : bI(new int64_t[MAXLEN + 1]()) {
-		copy(value.bI, value.bI + MAXLEN + 1, bI);
+	BigInt(const BigInt& value) : bI(new int64_t[maxlen + 1]()) {
+		copy(value.bI, value.bI + maxlen + 1, bI);
 	}
 	~BigInt() {
 		delete[] bI;
 	}
 	BigInt& operator=(int64_t b) {
-		char *str = new char[MAXLEN];
+		char *str = new char[maxlen];
 		intToStr(b, str);
 		strTolong(str, bI);
+		delete[] str;
 		return *this;
 	}
 	BigInt& operator=(const BigInt& value) {
-		copy(value.bI, value.bI + MAXLEN + 1, bI);
+		copy(value.bI, value.bI + maxlen + 1, bI);
 		return *this;
 	}
 	BigInt operator+(const BigInt& value) const {
@@ -74,8 +79,8 @@ public:
 		for (int64_t i = 1; i <= m + 1; i++) {
 			bI_3[i] = bI[i] + bI_2[i] + buffer;
 			buffer = 0;
-			if (bI_3[i] >= BASE) {
-				bI_3[i] -= BASE;
+			if (bI_3[i] >= base) {
+				bI_3[i] -= base;
 				buffer = 1; //перенос
 			}
 		}
@@ -99,7 +104,7 @@ public:
 		}
 		for (int64_t i = 1; i <= m; i++) {
 			if (bI[i] < bI_2[i]) {
-				bI[i] += BASE;
+				bI[i] += base;
 				buffer = 1;
 			}
 			bI_3[i] = bI[i] - bI_2[i]; //псевдовычитание
@@ -189,15 +194,15 @@ public:
 	}
 	void strTolong(string a, int64_t* la) {
 		if (a[0] == '-') {
-			la[0] = -static_cast<int64_t>(ceil((double)(a.size() - 1) / BASELEN));
+			la[0] = -static_cast<int64_t>(ceil((double)(a.size() - 1) / baselen));
 			a.erase(0, 1);
 		}
-		else la[0] = static_cast<int64_t>(ceil((double)a.size() / BASELEN));
+		else la[0] = static_cast<int64_t>(ceil((double)a.size() / baselen));
 		int64_t i = 0;
 		for (i = 1; i < abs(la[0]); i++) {
-			la[i] = atois(a.substr(a.size() - i * BASELEN, BASELEN));
+			la[i] = atois(a.substr(a.size() - i * baselen, baselen));
 		}
-		la[abs(la[0])] = atois(a.substr(0, a.size() - (i - 1)*BASELEN));
+		la[abs(la[0])] = atois(a.substr(0, a.size() - (i - 1)*baselen));
 	}
 	void intToStr(int64_t a, char* b) {
 		int count, cur = 0;
@@ -221,7 +226,7 @@ public:
 		if (!a)return 0;
 		return a / abs(a);
 	}
-	int digitCount(int64_t a) const {
+	int64_t digitCount(int64_t a) const {
 		int64_t count = 0;
 		if (!a)return 1;
 		while (a) {
@@ -232,6 +237,28 @@ public:
 	}
 	int64_t atois(string str) {
 		const char *c = str.c_str();
+		int size = str.size();
+		if (size >= 10) {
+			//atoi возвращает int. В случае, когда число имеет больше 10-ти
+			//разрядов, нужно разбить его на 2 части и дважды применить atoi.
+			int64_t a = 0;
+			int to = (size + 1) / 2, shift = 0;
+			char *halfStr = new char[to];
+			for (int k = 0; k < 2; k++) {
+				for (int i = 0; i < to; i++) {
+					halfStr[i] = str[i + shift];
+				}
+				if (k == 1 && to < (size - to))halfStr[to] = '\0';
+				a += atoi(halfStr);
+				if (k == 1) { 
+					delete[] halfStr;
+					return a; 
+				}
+				a *= pow(10, size - to);
+				shift = to;
+				to = size - to;
+			}
+		}
 		int64_t a = atoi(c);
 		return a;
 	}
@@ -245,7 +272,7 @@ ostream& operator<<(ostream& out, const BigInt& value)
 	int64_t dc;
 	for (int64_t i = abs(bI[0]) - 1; i >= 1; i--) {
 		dc = value.digitCount(bI[i]);
-		for (int64_t j = 0; j < BASELEN - dc; j++)out << "0";
+		for (int64_t j = 0; j < baselen - dc; j++)out << "0";
 		out << bI[i];
 	}
 	return out;
