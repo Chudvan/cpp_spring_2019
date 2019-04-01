@@ -28,10 +28,7 @@ class Matrix
 	int *m;
 public:
 	Matrix() {}
-	Matrix(size_t row, size_t column) {
-		rows = row;
-		columns = column;
-		m = new int[rows * columns]();
+	Matrix(size_t row, size_t column) : rows(row), columns(column), m(new int[rows * columns]()){
 	}
 	~Matrix() {
 		delete[] m;
