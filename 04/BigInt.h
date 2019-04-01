@@ -9,17 +9,14 @@ const int64_t base = 1000000000000000000;
 const int maxlen = 100;
 
 /*В задаче используется класс BigInt для работы с большими целыми числами.
-
   Идея: хранить число в массиве int *bI, разбив его по 4 разряда в каждой ячейке массива int* bI
   bI[0] = Число ячеек в числе (BigInt) * знак числа (-/+)
   bI[abs(bI[0])] - последняя ячейка числа(BigInt). Число записано в обратном направлении:
   Например: При base == 4, числу -392736452677368 будет соответствовать bI[101]=[-4][7368][5267][7364][392][0]...[0]
-
   Константы:
   baselen - число десятичных разрядов в одной ячейке массива int* bI (!!!baselen <= 18 (разрядность int64_t)!!!)
   base - основание системы счисления
   maxlen - максимальная длина числа BigInt в ячейках
-
   Методы класса BigInt:
   int64_t bigIntCMP(int64_t* la, int64_t*  lb) const; - СРАВНЕНИЕ КОЛ-ВА РАЗРЯДОВ у двух длинных чисел
   int64_t max(int64_t a, int64_t b) const; - max двух чисел (int64_t)
@@ -29,12 +26,13 @@ const int maxlen = 100;
   int64_t sgn(int64_t a) const; - sgn (-1/0/1)
   int digitCount(int64_t a) const; - получить КОЛ-ВО РАЗРЯДОВ в числе (в 10-ричной системе)
   int64_t atois(string str); - ПРЕОБРАЗОВАНИЕ (string)(НЕ const char *) -> (int64_t)
-
   Все операторы(+, -, <, <=, ==, !=, =>, >) в двух вверсиях: для BigInt и для int64_t
-
   P.S. Максимально большое число типа BigInt (при baselen == 18, base == 1000000000000000000) может состоять
   из baselen * maxlen == 1800 десятичных разрядов*/
 
+class BigInt;
+
+ostream& operator<<(ostream& out, const BigInt& value);
 
 class BigInt {
 public:
@@ -87,6 +85,7 @@ public:
 		if (!bI_3[m + 1])bI_3[0] = m; //не вышли за границу
 		else bI_3[0] = m + 1; //число стало на 1 разряд больше
 		if ((bI[0] < 0) || (bI_2[0] < 0))bI_3[0] *= -1;
+		//cout << *this << " + " << value << " = "<< c << endl;
 		return c;
 	}
 	BigInt operator-(const BigInt& value) const {
@@ -112,7 +111,12 @@ public:
 			buffer = 0;
 		}
 		if (!bI_3[m])while (!bI_3[m] && m > 1)m--; //уменьшилось ли число разрядов?? - ответ.
+		if (!bI_3[1]) {
+			bI_3[0] = 1;
+			return c;
+		}
 		bI_3[0] = sgn(bI[0])*m;
+		//cout << *this << " - " << value << " = " << c << endl;
 		return c;
 	}
 	BigInt operator-(int64_t& value) {
@@ -250,9 +254,9 @@ public:
 				}
 				if (k == 1 && to < (size - to))halfStr[to] = '\0';
 				a += atoi(halfStr);
-				if (k == 1) { 
+				if (k == 1) {
 					delete[] halfStr;
-					return a; 
+					return a;
 				}
 				a *= pow(10, size - to);
 				shift = to;
@@ -265,6 +269,15 @@ public:
 private:
 	int64_t *bI;
 };
+
+BigInt operator+(int64_t a, const BigInt& value) {
+	return value + a;
+}
+
+BigInt operator-(int64_t a, const BigInt& value) {
+	return -value + a;
+}
+
 ostream& operator<<(ostream& out, const BigInt& value)
 {
 	int64_t *bI = value.getBigInt();
