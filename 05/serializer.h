@@ -48,12 +48,12 @@ private:
 
 	template <class T>
 	Error process(T&& val) {
-		return out_object(val);
+		return out_object(std::forward<T>(val));
 	}
 
 	template <class T, class... Args>
 	Error process(T&& val, Args&&... args) {
-		if (out_object(val) == Error::CorruptedArchive)
+		if (out_object(std::forward<T>(val)) == Error::CorruptedArchive)
 			return Error::CorruptedArchive;
 		return process(std::forward<Args>(args)...);
 	}
@@ -84,12 +84,12 @@ private:
 
 	template <class T>
 	Error process(T&& value) {
-		return in_object(value);
+		return in_object(std::forward<T>(value));
 	}
 
 	template <class T, class... Args>
 	Error process(T&& value, Args&&... args) {
-		if (in_object(value) == Error::CorruptedArchive)
+		if (in_object(std::forward<T>(value)) == Error::CorruptedArchive)
 			return Error::CorruptedArchive;
 		return(process(std::forward<Args>(args)...));
 	}
@@ -113,7 +113,7 @@ private:
 	{
 		std::string text;
 		in_ >> text;
-		if (text[0] == '-')
+		if (text[0] == '-' || text[0] == '\0')
 			return Error::CorruptedArchive;
 		try {
 			uint64_t a = stoul(text);
