@@ -17,15 +17,15 @@ public:
 	}
 
 	template <class T>
-	Error save(T&& object)
+	Error save(T& object)
 	{
 		return object.serialize(*this);
 	}
 
 	template <class... ArgsT>
-	Error operator()(ArgsT... args)
+	Error operator()(ArgsT&&... args)
 	{
-		return process(args...);
+		return process(std::forward<ArgsT>(args)...);
 	}
 
 private:
@@ -61,7 +61,6 @@ private:
 
 class Deserializer
 {
-	static constexpr char Separator = ' ';
 public:
 	explicit Deserializer(std::istream& in)
 		: in_(in)
@@ -75,7 +74,7 @@ public:
 	}
 
 	template <class T>
-	Error load(T&& object)
+	Error load(T& object)
 	{
 		return object.serialize(*this);
 	}
@@ -113,18 +112,15 @@ private:
 	{
 		std::string text;
 		in_ >> text;
-		if (text[0] == '-' || text[0] == '\0')
-			return Error::CorruptedArchive;
-		try {
-			uint64_t a = stoul(text);
-			value = a;
+		uint64_t buffer = 0;
+		for (auto sym : text) {
+			if (sym >= '0' && sym <= '9') {
+				buffer = buffer * 10 + (sym - '0');
+			}
+			else 
+				return Error::CorruptedArchive;
 		}
-		catch (std::invalid_argument) {
-			return Error::CorruptedArchive;
-		}
-		catch (std::out_of_range) {
-			return Error::CorruptedArchive;
-		}
+		value = buffer;
 		return Error::NoError;
 	}
 };
