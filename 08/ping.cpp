@@ -3,31 +3,31 @@
 #include <thread>
 #include <condition_variable>
 
-int count = 1000000;
+const int count = 500000;
+bool status = false;
 std::mutex m;
 std::condition_variable c;
 
 void ping() {
-	while (count) {
+	for(int i = 0; i < count; i++){
 		std::unique_lock<std::mutex> lock(m);
-		while (count % 2) {
+		while (status) {
 			c.wait(lock);
 		}
 		std::cout << "ping\n";
-		count--;
+		status = true;
 		c.notify_one();
 	}
 }
 
 void pong() {
-	while (count) {
+	for (int i = 0; i < count; i++) {
 		std::unique_lock<std::mutex> lock(m);
-		while ((count + 1) % 2) {
+		while (!status) {
 			c.wait(lock);
 		}
 		std::cout << "pong\n";
-		count--;
-		if (!count) return;
+		status = false;
 		c.notify_one();
 	}
 }
@@ -35,8 +35,7 @@ void pong() {
 int main() {
 	std::thread t1(ping);
 	std::thread t2(pong);
-	t1.detach();
-	t2.detach();
-	system("pause>nul");
+	t1.join();
+	t2.join();
 	return 0;
 }
