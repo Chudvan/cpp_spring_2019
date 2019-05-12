@@ -21,11 +21,13 @@ class Sort {
 	std::condition_variable c;
 	bool statusFull;
 	std::queue<size_t> freeThreads;
+
 public:
+
 	Sort() : numberOfThreads(2)
 		, memory(8 * 1024 * 1024)
 		, maxNumbers(memory / (sizeof(uint64_t)))
-		, numbersPerThread(maxNumbers / numberOfThreads)
+		, numbersPerThread(2)
 		, amountOfParts(0)
 		, statusFull(false)
 	{
@@ -91,6 +93,8 @@ public:
 
 	};
 
+private:
+
 	std::string getFileName(size_t n) {
 		std::string file = "temp_" + std::to_string(n) + ".tmp";
 		return file;
@@ -121,6 +125,9 @@ public:
 		auto &part = bufFiles[threadId];
 		std::sort(std::begin(part), std::end(part));
 		std::ofstream ofile(ofname, std::ios::binary);
+		if (!ofile) {
+			throw std::runtime_error("can't open " + ofname + " file.");
+		}
 		ofile.write(reinterpret_cast<char *>(part.data()), part.size() * sizeof(uint64_t));
 		freeThreads.push(threadId);
 		c.notify_all();
@@ -137,7 +144,6 @@ public:
 	}
 
 	void writeNum(std::ofstream& ofile, uint64_t n) {
-
 		if (!ofile.write(reinterpret_cast<char *>(&n), sizeof(uint64_t))) {
 			throw std::runtime_error("can't write in output file.");
 		}
@@ -153,11 +159,11 @@ public:
 			}
 		}
 
-		auto comparator = [](const std::pair<std::uint64_t, std::size_t>& x, const std::pair<std::uint64_t, std::size_t>& y) {
+		using Pair = std::pair<uint64_t, size_t>;
+
+		auto comparator = [](const Pair& x, const Pair& y) {
 			return x.first > y.first;
 		};
-
-		using Pair = std::pair<uint64_t, size_t>;
 
 		std::priority_queue<Pair, std::vector<Pair>, decltype(comparator)> pQueue(comparator);
 

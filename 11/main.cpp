@@ -6,7 +6,7 @@ int main()
 	std::string ofname = "file.out";
 	std::string ofnameSort = "fileSort.out";
 	std::ofstream ofile(ofname, std::ios::binary);
-	size_t count = 7;
+	size_t count = 5;
 	uint64_t *ar = new uint64_t[count];
 	std::cout << "Запись в файл:" << std::endl;
 	for (size_t i = 0; i < count; i++) {
