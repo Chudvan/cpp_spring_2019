@@ -27,7 +27,7 @@ public:
 	Sort() : numberOfThreads(2)
 		, memory(8 * 1024 * 1024)
 		, maxNumbers(memory / (sizeof(uint64_t)))
-		, numbersPerThread(2)
+		, numbersPerThread(maxNumbers / numberOfThreads)
 		, amountOfParts(0)
 		, statusFull(false)
 	{
