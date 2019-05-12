@@ -8,17 +8,17 @@ int main()
 	std::ofstream ofile(ofname, std::ios::binary);
 	size_t count = 7;
 	uint64_t *ar = new uint64_t[count];
-	std::cout << "Запись в файл:" << std::endl;
+	std::cout << "Р—Р°РїРёСЃСЊ РІ С„Р°Р№Р»:" << std::endl;
 	for (size_t i = 0; i < count; i++) {
 		std::cin >> ar[i];
 		ofile.write(reinterpret_cast<char *>(&ar[i]), sizeof(uint64_t));
 	}
 	ofile.close();
-	//Сортировка
+	//РЎРѕСЂС‚РёСЂРѕРІРєР°
 	Sort sort;
 	sort(ofname, ofnameSort);
 
-	std::cout << "Чтение из файла:" << std::endl;
+	std::cout << "Р§С‚РµРЅРёРµ РёР· С„Р°Р№Р»Р°:" << std::endl;
 	std::ifstream ifile(ofnameSort, std::ios::binary);
 	int i = 0;
 	while (!ifile.read(reinterpret_cast<char *>(&ar[i]), sizeof(uint64_t)).eof()) {
