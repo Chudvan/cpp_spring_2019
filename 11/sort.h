@@ -27,7 +27,7 @@ public:
 	Sort() : numberOfThreads(2)
 		, memory(8 * 1024 * 1024)
 		, maxNumbers(memory / (sizeof(uint64_t)))
-		, numbersPerThread(maxNumbers / numberOfThreads)
+		, numbersPerThread(maxNumbers / (numberOfThreads + 1))
 		, amountOfParts(0)
 		, statusFull(false)
 	{
@@ -35,7 +35,7 @@ public:
 		createBuf();
 	}
 
-	void operator()(std::string& input, std::string& output) {
+	void operator()(const std::string& input, const std::string& output) {
 
 		for (size_t i = 0; i < numberOfThreads; i++) {
 			freeThreads.push(i);
@@ -120,7 +120,7 @@ private:
 		}
 	}
 
-	void sortAndSave(std::string& ofname, size_t threadId) {
+	void sortAndSave(const std::string& ofname, size_t threadId) {
 		std::unique_lock<std::mutex> lock(*mutexes[threadId + 1]);
 		auto &part = bufFiles[threadId];
 		std::sort(std::begin(part), std::end(part));
@@ -169,7 +169,7 @@ private:
 
 		for (int i = 0; i < amountOfParts; i++) {
 			uint64_t curNum = getNum(tempFiles[i]);
-			pQueue.push(std::make_pair(curNum, i));
+			pQueue.emplace(curNum, i);
 		}
 
 		while (!pQueue.empty()) {

@@ -17,7 +17,6 @@ int main()
 	//Сортировка
 	Sort sort;
 	sort(ofname, ofnameSort);
-
 	std::cout << "Чтение из файла:" << std::endl;
 	std::ifstream ifile(ofnameSort, std::ios::binary);
 	int i = 0;
@@ -25,7 +24,7 @@ int main()
 		std::cout << ar[i] << std::endl;
 		i++;
 	}
-
+	delete[] ar;
 	system("pause>nul");
 	return 0;
 }
