@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <functional>
 #include <utility>
+#include <future>
 
 class Sort {
 	size_t numberOfThreads;
@@ -17,6 +18,7 @@ class Sort {
 	size_t numbersPerThread;
 	size_t amountOfParts;
 	std::vector<std::vector<uint64_t>> bufFiles;
+	std::vector<uint64_t> bufFile;
 	std::vector<std::unique_ptr<std::mutex>> mutexes;
 	std::condition_variable c;
 	bool statusFull;
@@ -32,10 +34,12 @@ public:
 		, statusFull(false)
 	{
 		createMutex();
-		createBuf();
 	}
 
 	void operator()(const std::string& input, const std::string& output) {
+
+		createBuf();
+		amountOfParts = 0;
 
 		for (size_t i = 0; i < numberOfThreads; i++) {
 			freeThreads.push(i);
@@ -46,7 +50,6 @@ public:
 			throw std::runtime_error("can't open " + input + " file.");
 		}
 		while (!ifile.eof()) {
-			std::vector<uint64_t> bufFile;
 			bufFile.resize(numbersPerThread);
 			if (!ifile.read(reinterpret_cast<char *>(bufFile.data()), numbersPerThread * sizeof(uint64_t))) {
 				if (!ifile.eof()) {
@@ -72,8 +75,16 @@ public:
 			freeThreads.pop();
 			bufFiles[threadId].swap(bufFile);
 
-			std::thread thread(std::bind(&Sort::sortAndSave, this, getFileName(amountOfParts), threadId));
-			thread.detach();
+			auto thread = std::async(std::launch::async
+				, std::bind(&Sort::sortAndSave, this, getFileName(amountOfParts), threadId));
+
+			try {
+				thread.get();
+			}
+			catch (...) {
+				throw;
+			}
+
 			amountOfParts++;
 		}
 
@@ -120,6 +131,13 @@ private:
 		}
 	}
 
+	void deleteBuf() {
+		for (size_t i = 0; i < numberOfThreads; i++) {
+			bufFiles[i].resize(0);
+		}
+		bufFiles.resize(0);
+	}
+
 	void sortAndSave(const std::string& ofname, size_t threadId) {
 		std::unique_lock<std::mutex> lock(*mutexes[threadId + 1]);
 		auto &part = bufFiles[threadId];
@@ -128,7 +146,9 @@ private:
 		if (!ofile) {
 			throw std::runtime_error("can't open " + ofname + " file.");
 		}
-		ofile.write(reinterpret_cast<char *>(part.data()), part.size() * sizeof(uint64_t));
+		if (!ofile.write(reinterpret_cast<char *>(part.data()), part.size() * sizeof(uint64_t))) {
+			throw std::runtime_error("can't write in output file.");
+		}
 		freeThreads.push(threadId);
 		c.notify_all();
 	}
@@ -150,6 +170,8 @@ private:
 	}
 
 	void mergeAndSave(std::ofstream& ofile) {
+
+		deleteBuf();
 
 		std::vector<std::ifstream> tempFiles;
 		for (int i = 0; i < amountOfParts; i++) {
